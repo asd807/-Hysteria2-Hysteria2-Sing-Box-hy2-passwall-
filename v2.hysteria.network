@@ -1,0 +1,117 @@
+官网：https://v2.hysteria.network/
+
+密码生成器：https://www.roboform.com/cn/password-generator
+
+查看端口是否被占用：
+netstat -lnp | grep 80
+netstat -lnp | grep 443
+
+命令合集：
+启动：systemctl start hysteria-server.service
+停止：systemctl stop hysteria-server.service
+重启：systemctl restart hysteria-server.service
+查看状态：systemctl status hysteria-server.service -l
+设置开机启动：systemctl enable hysteria-server.service
+取消开机启动：systemctl disable hysteria-server.service
+
+
+自签名证书：https://bkssl.com/ssl/selfsign
+
+测试命令：
+/usr/local/bin/hysteria server --config /etc/hysteria/config.yaml
+ 
+开放6443端口
+iptables -I INPUT -p udp --dport 6443 -j ACCEPT
+
+
+
+
+---centos7部署开始---
+1.升级内核
+2.升级软件 
+   yum update -y
+3.开放80 443端口
+iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+iptables -I INPUT -p tcp --dport 443 -j ACCEPT
+iptables -I INPUT -p udp --dport 6443 -j ACCEPT
+4.检查80 443 端口是否被占用
+netstat -lnp | grep 80
+netstat -lnp | grep 443
+5.安装配置hysteria,包括证书
+bash <(curl -fsSL https://get.hy2.sh/)
+mkdir /home/hysteria
+vim /etc/hysteria/config.yaml
+
+6.开放hysteria端口
+7.自有域名赋予普通用户低端口权限：
+setcap cap_net_bind_service=+ep /usr/local/bin/hysteria
+8.启动hysteria
+
+
+
+centos7问题：
+https://github.com/apernet/hysteria/issues/810#issuecomment-1807690164
+
+centos7更新内核：
+https://blog.yywq.me/article/39f87fd6-1c3e-4826-90d9-5d031393ca8d
+
+---centos7部署结束---
+
+
+查看端口是否被占用：
+netstat -lnp | grep 端口号
+
+
+端口跳跃：
+
+开放20000-50000之间的端口号：
+iptables -t nat -A PREROUTING -i ens33 -p udp --dport 20000:50000 -j DNAT --to-destination :6443
+
+
+
+端口跳跃+负载均衡
+端口在线生成器：https://www.chahuo.com/random-port-generator.html
+
+负载均衡（haproxy）
+负载均衡,健康检查,监控与统计
+负载均衡：按照权重将连接平均分配到不同的服务器/端口
+健康检查：实时检查后端连接的可用性，如果不可用，会自动临时下线该服务器。
+			如果可用了会再次上线该服务器。
+监控与统计：监控与统计服务器状态与流量
+
+删除20000-50000之间的端口号：
+iptables -t nat -D PREROUTING -i ens33 -p udp --dport 20000:50000 -j DNAT --to-destination :6443
+
+
+16669
+27740
+39171 
+49895
+55831
+iptables -t nat -A PREROUTING -i ens33 -p udp --dport 16669 -j DNAT --to-destination :6443
+iptables -t nat -A PREROUTING -i ens33 -p udp --dport 27740 -j DNAT --to-destination :6443
+iptables -t nat -A PREROUTING -i ens33 -p udp --dport 39171 -j DNAT --to-destination :6443
+iptables -t nat -A PREROUTING -i ens33 -p udp --dport 49895 -j DNAT --to-destination :6443
+iptables -t nat -A PREROUTING -i ens33 -p udp --dport 55831 -j DNAT --to-destination :6443
+
+端口跳跃+主机跳跃+负载均衡
+
+
+
+性能优化
+
+脚本文件地址：/tmp/etc/passwall/script_func
+
+修改窗口bug：/usr/lib/lua/luci/model/cbi/passwall/client/type
+
+iptables -t nat -A PREROUTING -i ens33 -p udp --dport 20000:50000 -j DNAT --to-destination :6443
+
+
+quic:
+  initStreamReceiveWindow: 26843545 
+  maxStreamReceiveWindow: 26843545 
+  initConnReceiveWindow: 67108864 
+  maxConnReceiveWindow: 67108864 
+
+
+
